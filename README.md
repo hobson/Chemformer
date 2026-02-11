@@ -1,3 +1,5 @@
+This repository has been replaced by [AiZynthModels](https://github.com/MolecularAI/aizynthmodels). Among other things, AiZynthModels includes an updated Chemformer model.
+
 # Chemformer
 This repository contains the code used to generate the results in the Chemformer papers [[1]](#1) [[2]](#2) [[3]](#3).
 
