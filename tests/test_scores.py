@@ -1,5 +1,6 @@
 import pytest
 import pandas as pd
+from molbart.constants import CONFIG_DIR
 
 import omegaconf as oc
 
@@ -14,7 +15,7 @@ from molbart.utils import trainer_utils
 
 
 def test_default_inference_scoring():
-    config = oc.OmegaConf.load("molbart/config/inference_score.yaml")
+    config = oc.OmegaConf.load(CONFIG_DIR / "inference_score.yaml")
     score_config = config.get("scorers")
     scorers = trainer_utils.instantiate_scorers(score_config)
 

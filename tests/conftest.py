@@ -10,7 +10,7 @@ import molbart.utils.data_utils as util
 from molbart.models import Chemformer
 from molbart.data import SynthesisDataModule
 from molbart.utils.tokenizers import ChemformerTokenizer, SpanTokensMasker
-
+from molbart.constants import CONFIG_DIR
 
 @pytest.fixture
 def example_tokens():
@@ -111,7 +111,7 @@ def round_trip_converted_prediction_data(shared_datadir):
 
 @pytest.fixture
 def model_batch_setup(round_trip_namespace_args):
-    config = oc.OmegaConf.load("molbart/config/round_trip_inference.yaml")
+    config = oc.OmegaConf.load(CONFIG_DIR / "round_trip_inference.yaml")
     data = pd.read_csv(round_trip_namespace_args.input_data, sep="\t")
 
     config.d_model = 4

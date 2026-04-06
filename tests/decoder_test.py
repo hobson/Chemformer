@@ -27,7 +27,7 @@ def test_sort_beams():
 
 
 def test_greedy_calls_decode(mocker):
-    mocked_tokenizer = mocker.patch("molbart.modules.tokenizer.ChemformerTokenizer")
+    mocked_tokenizer = mocker.patch("molbart.utils.tokenizers.tokenizers.ChemformerTokenizer")
     max_seq_len = 3
     batch_size = 4
     num_tokens = 50
@@ -50,7 +50,7 @@ def test_greedy_calls_decode(mocker):
 
 
 def test_greedy_chooses_max(mocker):
-    mocked_tokenizer = mocker.patch("molbart.modules.tokenizer.ChemformerTokenizer")
+    mocked_tokenizer = mocker.patch("molbart.utils.tokenizers.tokenizers.ChemformerTokenizer")
     max_seq_len = 3
     batch_size = 1
 
@@ -79,7 +79,7 @@ def test_greedy_chooses_max(mocker):
 
 
 def test_greedy_stops_at_end_token(mocker):
-    mocked_tokenizer = mocker.patch("molbart.modules.tokenizer.ChemformerTokenizer")
+    mocked_tokenizer = mocker.patch("molbart.utils.tokenizers.tokenizers.ChemformerTokenizer")
     max_seq_len = 3
     batch_size = 1
 
@@ -109,7 +109,7 @@ def test_greedy_stops_at_end_token(mocker):
 
 
 def test_greedy_lls(mocker):
-    mocked_tokenizer = mocker.patch("molbart.modules.tokenizer.ChemformerTokenizer")
+    mocked_tokenizer = mocker.patch("molbart.utils.tokenizers.tokenizers.ChemformerTokenizer")
     max_seq_len = 3
     batch_size = 1
 
@@ -139,7 +139,7 @@ def test_greedy_lls(mocker):
 
 
 def test_beam_calls_decode(mocker):
-    mocked_tokenizer = mocker.patch("molbart.modules.tokenizer.ChemformerTokenizer")
+    mocked_tokenizer = mocker.patch("molbart.utils.tokenizers.tokenizers.ChemformerTokenizer")
     max_seq_len = 3
     batch_size = 4
     num_beams = 5
@@ -162,7 +162,7 @@ def test_beam_calls_decode(mocker):
 
 
 def test_beam_chooses_correct_tokens(mocker):
-    mocked_tokenizer = mocker.patch("molbart.modules.tokenizer.ChemformerTokenizer")
+    mocked_tokenizer = mocker.patch("molbart.utils.tokenizers.tokenizers.ChemformerTokenizer")
     max_seq_len = 4
     batch_size = 1
     num_beams = 2
@@ -209,7 +209,7 @@ def test_beam_chooses_correct_tokens(mocker):
 
 
 def test_beam_stops_at_end_token(mocker):
-    mocked_tokenizer = mocker.patch("molbart.modules.tokenizer.ChemformerTokenizer")
+    mocked_tokenizer = mocker.patch("molbart.utils.tokenizers.tokenizers.ChemformerTokenizer")
     max_seq_len = 4
     batch_size = 1
     num_beams = 2
@@ -256,7 +256,7 @@ def test_beam_stops_at_end_token(mocker):
 
 
 def test_beam_lls(mocker):
-    mocked_tokenizer = mocker.patch("molbart.modules.tokenizer.ChemformerTokenizer")
+    mocked_tokenizer = mocker.patch("molbart.utils.tokenizers.tokenizers.ChemformerTokenizer")
     max_seq_len = 4
     batch_size = 1
     num_beams = 2
