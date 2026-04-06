@@ -4,9 +4,6 @@ from rdkit import Chem
 from molbart.retrosynthesis.disconnection_aware.disconnection_atom_mapper import (
     DisconnectionAtomMapper,
 )
-from molbart.retrosynthesis.disconnection_aware.utils import (
-    verify_disconnection,
-)
 
 
 @pytest.mark.parametrize(
