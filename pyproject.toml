@@ -11,7 +11,7 @@ authors = [
     {name = "Peter Hartog", email="peter.hartog@astrazeneca.com"},
     {name = "Genheden, Samuel", email="samuel.genheden@astrazeneca.com"},
     ]
-license = "Apache 2.0"
+license = "Apache-2.0"
 packages = [{ include = "molbart" }]
 
 dependencies = [
