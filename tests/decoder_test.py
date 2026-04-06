@@ -1,6 +1,7 @@
 import torch
 
-from molbart.modules.decoder import BeamSearchSampler, DecodeSampler
+from molbart.utils.samplers import BeamSearchSampler
+from molbart.utils.samplers.beam_search_samplers import DecodeSampler
 
 
 def test_transpose_list():

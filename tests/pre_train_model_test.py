@@ -4,9 +4,10 @@ import pytest
 import torch
 
 from molbart.models.transformer_models import BARTModel
-from molbart.modules.data.util import BatchEncoder
-from molbart.modules.decoder import DecodeSampler
-from molbart.modules.tokenizer import ChemformerTokenizer, ReplaceTokensMasker
+from molbart.data.util import BatchEncoder
+from molbart.utils.samplers import BeamSearchSampler
+from molbart.utils.samplers.beam_search_samplers import DecodeSampler
+from molbart.utils.tokenizers.tokenizers import ChemformerTokenizer, ReplaceTokensMasker
 
 regex = r"\[[^\]]+]|Br?|Cl?|N|O|S|P|F|I|b|c|n|o|s|p|\(|\)|\.|=|#|-|\+|\\\\|\/|:|~|@|\?|>|\*|\$|\%[0-9]{2}|[0-9]"
 

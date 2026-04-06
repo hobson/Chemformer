@@ -1,4 +1,13 @@
-In [1]: from molbart import predict
+# Dependencies iPython, numpy, Jupyter
+
+If you install iPython or Jupyter in python~=3.10, it will break molbart which depends on numpy < 2.
+
+Added it as a direct dependency in python 3.8 and it worked find.
+
+## `ipython`
+
+```python
+>>> from molbart import predict
 
 A module that was compiled using NumPy 1.x cannot be run in
 NumPy 2.0.2 as it may crash. To support both 1.x and 2.x
@@ -139,3 +148,4 @@ File ~/code/corethink/Chemformer/.venv/lib/python3.9/site-packages/torch/__init_
     200 if TYPE_CHECKING:
 
 AttributeError: _ARRAY_API not found
+```
