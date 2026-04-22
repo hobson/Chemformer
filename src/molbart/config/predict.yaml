@@ -26,6 +26,7 @@ model_path: null
 model_type: bart            # ["bart", "unified"]
 dataset_part: full      # ["full", "train", "val", "test"]
 train_mode: eval
+reactants: null
 
 datamodule:
   - SynthesisDataModule

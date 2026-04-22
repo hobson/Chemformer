@@ -10,7 +10,7 @@ from molbart.models import Chemformer
 app = FastAPI()
 
 # Container for data, classes that can be loaded upon startup of the REST API
-config = oc.OmegaConf.load("../molbart/config/predict.yaml")
+config = oc.OmegaConf.load("../../molbart/config/predict.yaml")
 
 config.batch_size = 64
 config.n_gpus = 1

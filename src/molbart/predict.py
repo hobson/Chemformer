@@ -3,7 +3,7 @@ import pandas as pd
 
 import molbart.utils.data_utils as util
 from molbart.models import Chemformer
-
+from molbart.constants import CONFIG_DIR
 
 def write_predictions(args, smiles, log_lhs, original_smiles):
     num_data = len(smiles)
@@ -27,7 +27,7 @@ def write_predictions(args, smiles, log_lhs, original_smiles):
     df.to_csv(args.output_sampled_smiles, sep="\t", index=False)
 
 
-@hydra.main(version_base=None, config_path="config", config_name="predict")
+@hydra.main(version_base=None, config_path=str(CONFIG_DIR), config_name="predict")
 def main(args):
     chemformer = Chemformer(args)
 

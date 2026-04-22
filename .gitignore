@@ -1,2 +1,9 @@
+data
+models
 .pytest_cache
 __pycache__
+*.zip
+*.pickle
+*.chkpt
+*.pyc
+
