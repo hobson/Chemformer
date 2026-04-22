@@ -1,0 +1,6 @@
+data_path: null
+smiles_column: input_smiles
+mol_opt_tokens_path: mol_opt_tokens.txt
+prop_pred_tokens_path: prop_pred_tokens.txt
+num_unused_tokens: 200
+tokenizer_path: null
