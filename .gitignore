@@ -1,5 +1,5 @@
 src/molbart/bigdata
-src/molbart/models
+src/molbart/bigmodels
 .pytest_cache
 __pycache__
 *.zip
