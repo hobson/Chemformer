@@ -31,10 +31,11 @@ def build_unused_tokens(num_tokens):
     return tokens
 
 
-@hydra.main(version_base=None, config_path=CONFIG_DIR, config_name="build_tokeniser")
+@hydra.main(version_base=None, data_path=DATA_DIR, config_path=CONFIG_DIR, config_name="build_tokenizer")
 def main(args):
     print("Reading molecule dataset...")
-    print(args)
+    # print(args)
+    # {'data_path': None, 'smiles_column': 'canonical_smiles', 'mol_opt_tokens_path': 'mol_opt_tokens.txt', 'prop_pred_tokens_path': 'prop_pred_tokens.txt', 'num_unused_tokens': 200, 'tokeniser_path': None}
     mol_dataset = pd.read_pickle(args.data_path)
     smiles = mol_dataset[args.smiles_column].values.tolist()
     print("Completed reading dataset.")

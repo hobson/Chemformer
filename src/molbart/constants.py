@@ -1,4 +1,5 @@
 from pathlib import Path
 
 
-CONFIG_DIR = Path(__file__).resolve().parent / "config"
+CONFIG_DIR = str(Path(__file__).resolve().parent / "config")
+DATA_DIR = str(Path(__file__).resolve().parent / "bigdata")
