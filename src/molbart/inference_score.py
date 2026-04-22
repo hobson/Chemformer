@@ -1,10 +1,11 @@
 import hydra
 
 import molbart.utils.data_utils as util
+from molbart.constants import CONFIG_DIR
 from molbart.models import Chemformer
 
 
-@hydra.main(version_base=None, config_path="config", config_name="inference_score")
+@hydra.main(version_base=None, config_path=CONFIG_DIR, config_name="inference_score")
 def main(args):
     util.seed_everything(args.seed)
 

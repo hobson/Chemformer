@@ -3,10 +3,12 @@ import time
 import hydra
 
 import molbart.utils.data_utils as util
+from molbart.constants import CONFIG_DIR
 from molbart.models import Chemformer
 
 
-@hydra.main(version_base=None, config_path="config", config_name="fine_tune")
+
+@hydra.main(version_base=None, config_path=CONFIG_DIR, config_name="fine_tune")
 def main(args):
     util.seed_everything(args.seed)
     print("Fine-tuning CHEMFORMER.")

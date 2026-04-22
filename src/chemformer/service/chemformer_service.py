@@ -1,11 +1,15 @@
-import os
 from typing import List
-
-import omegaconf as oc
+from hydra import compose, initialize
 from fastapi import FastAPI
+from molbart.models import Chemformer
+from molbart.constants import CONFIG_DIR
+import omegaconf as oc
+import os
 from service_utils import calculate_llhs, estimate_compound_llhs, get_predictions
 
-from molbart.models import Chemformer
+with initialize(version_base=None, config_path=CONFIG_DIR, job_name="zydus_eval_testing_and_eda"):
+    cfg = compose(config_name="predict")
+print(oc.OmegaConf.to_yaml(cfg))
 
 app = FastAPI()
 

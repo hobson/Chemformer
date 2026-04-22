@@ -6,7 +6,9 @@ import molbart.utils.data_utils as util
 import molbart.utils.trainer_utils as trainer_utils
 from molbart.models.transformer_models import BARTModel, UnifiedModel
 from molbart.utils.samplers.beam_search_samplers import DecodeSampler
-from molbart.utils.tokenizer import ChemformerTokenizer, ReplaceTokensMasker, SpanTokensMasker
+from molbart.constants import CONFIG_DIR
+
+from molbart.utils.tokenizers import ChemformerTokenizer, ReplaceTokensMasker, SpanTokensMasker
 
 
 def build_model(args, sampler, vocab_size, total_steps, pad_token_idx):
@@ -73,7 +75,7 @@ def build_model(args, sampler, vocab_size, total_steps, pad_token_idx):
     return model
 
 
-@hydra.main(version_base=None, config_path="config", config_name="pretrain")
+@hydra.main(version_base=None, config_path=CONFIG_DIR, config_name="pretrain")
 def main(args):
     util.seed_everything(args.seed)
 

@@ -155,9 +155,9 @@ Install FastAPI libraries
 ```
 Then
 ```
-    cd service
-    export CHEMFORMER_MODEL={PATH TO MODEL}
-    export CHEMFORMER_VOCAB={PATH TO VOCABULARY FILE}
+cd service
+export CHEMFORMER_MODEL=src/chemformer/models/pre-trained/combined/step=1000000.ckpt
+export CHEMFORMER_VOCAB=
     export CHEMFORMER_TASK=backward_prediction
     python chemformer_service.py
 ```

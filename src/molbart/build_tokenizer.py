@@ -3,7 +3,8 @@ from pathlib import Path
 import hydra
 import pandas as pd
 
-from molbart.utils.tokenizer import ChemformerTokenizer
+from molbart.constants import CONFIG_DIR
+from molbart.utils.tokenizers import ChemformerTokenizer
 from molbart.utils.data_utils import REGEX
 
 
@@ -30,9 +31,10 @@ def build_unused_tokens(num_tokens):
     return tokens
 
 
-@hydra.main(version_base=None, config_path="config", config_name="build_tokeniser")
+@hydra.main(version_base=None, config_path=CONFIG_DIR, config_name="build_tokeniser")
 def main(args):
     print("Reading molecule dataset...")
+    print(args)
     mol_dataset = pd.read_pickle(args.data_path)
     smiles = mol_dataset[args.smiles_column].values.tolist()
     print("Completed reading dataset.")
