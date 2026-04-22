@@ -7,6 +7,8 @@ from molbart.constants import CONFIG_DIR, DATA_DIR, MOLDATA_FILEPATH, MODELS_DIR
 from molbart.utils.tokenizers import ChemformerTokenizer
 from molbart.utils.data_utils import REGEX
 
+import omegaconf as oc
+
 
 def read_extra_tokens(paths):
     extra_tokens = []
@@ -31,14 +33,15 @@ def build_unused_tokens(num_tokens):
     return tokens
 
 
-@hydra.main(version_base=None, config_path=CONFIG_DIR, config_name="build_tokenizer")
-def main(args):
-    args.data_path = MOLDATA_FILEPATH
-    print(f"build_tokenizer.main(args=**{args}")
+# @hydra.main(version_base=None, config_path=CONFIG_DIR, config_name="build_tokenizer")
+def main(args):  # mol_opt.pickle, uspto_50.pickle, uspto_mixed.pickle, uspto_sep.pickle
+    """ Only purpose is to set up Hydra args """
+    print(f"build_tokenizer.get_args(args=**{args}")
     # {'data_path': None, 'smiles_column': 'canonical_smiles', 'mol_opt_tokens_path': 'mol_opt_tokens.txt', 'prop_pred_tokens_path': 'prop_pred_tokens.txt', 'num_unused_tokens': 200, 'tokeniser_path': None}
-    
+    # mol_opt.pick has columns input_smiles and output_smiles but not canonical_smiles    
     print("Reading molecule dataset...")
     mol_dataset = pd.read_pickle(args.data_path)
+
     smiles = mol_dataset[args.smiles_column].values.tolist()
     print("Completed reading dataset.")
 
@@ -57,9 +60,15 @@ def main(args):
     print("Completed building tokenizer.")
 
     print("Writing tokenizer...")
-    tokenizer.save_vocabulary(args.tokenizer_path)
+    tokenizer.save_vocabulary(args.tokenizer_path or 'tokenizer_vocab')
     print("Complete.")
+    return tokenizer
 
 
 if __name__ == "__main__":
-    main()
+    with hydra.initialize(version_base=None, config_path='config', job_name="hobs_attempting_to_build_tokenizer"):
+        cfg = hydra.compose(config_name="build_tokenizer")  # "fine_tune")
+    cfg.data_path = str(Path(DATA_DIR) / 'seq-to-seq_datasets' / 'mol_opt.pickle')
+    print(oc.OmegaConf.to_yaml(cfg))
+
+    tokenizer = main(args=cfg)
