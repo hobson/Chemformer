@@ -3,7 +3,7 @@ from pathlib import Path
 import hydra
 import pandas as pd
 
-from molbart.constants import CONFIG_DIR
+from molbart.constants import CONFIG_DIR, DATA_DIR, MOLDATA_FILEPATH, MODELS_DIR
 from molbart.utils.tokenizers import ChemformerTokenizer
 from molbart.utils.data_utils import REGEX
 
@@ -31,11 +31,13 @@ def build_unused_tokens(num_tokens):
     return tokens
 
 
-@hydra.main(version_base=None, data_path=DATA_DIR, config_path=CONFIG_DIR, config_name="build_tokenizer")
+@hydra.main(version_base=None, config_path=CONFIG_DIR, config_name="build_tokenizer")
 def main(args):
-    print("Reading molecule dataset...")
-    # print(args)
+    args.data_path = MOLDATA_FILEPATH
+    print(f"build_tokenizer.main(args=**{args}")
     # {'data_path': None, 'smiles_column': 'canonical_smiles', 'mol_opt_tokens_path': 'mol_opt_tokens.txt', 'prop_pred_tokens_path': 'prop_pred_tokens.txt', 'num_unused_tokens': 200, 'tokeniser_path': None}
+    
+    print("Reading molecule dataset...")
     mol_dataset = pd.read_pickle(args.data_path)
     smiles = mol_dataset[args.smiles_column].values.tolist()
     print("Completed reading dataset.")
@@ -55,7 +57,7 @@ def main(args):
     print("Completed building tokenizer.")
 
     print("Writing tokenizer...")
-    tokenizer.save_vocabulary(args.tokeniser_path)
+    tokenizer.save_vocabulary(args.tokenizer_path)
     print("Complete.")
 
 
