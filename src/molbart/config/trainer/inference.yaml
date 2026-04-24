@@ -2,4 +2,4 @@ _target_: pytorch_lightning.Trainer
 
 accelerator: null
 gpus: ${n_gpus}
-precision: 16
+precision: 32

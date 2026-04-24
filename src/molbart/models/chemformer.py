@@ -110,7 +110,8 @@ class Chemformer:
             data_device = "cpu"
 
         self.device = device
-
+        
+        print(f'Chemformer.config.vocabulary_path={config.vocabulary_path}')
         self.tokenizer = ChemformerTokenizer(filename=config.vocabulary_path)
 
         self.model_type = config.model_type
@@ -120,7 +121,7 @@ class Chemformer:
         self.is_data_setup = False
         self.set_datamodule(datamodule_type=config.get("datamodule"))
 
-        print("Vocabulary_size: " + str(len(self.tokenizer)))
+        print(f"Chemformer.vocabulary_size: {len(self.tokenizer)}")
         self.vocabulary_size = len(self.tokenizer)
 
         if self.train_mode.startswith("train"):
@@ -339,9 +340,9 @@ class Chemformer:
                     model = BARTModel.load_from_checkpoint(
                         self.model_path,
                         decode_sampler=self.sampler,
-                        num_steps=total_steps,
                         pad_token_idx=pad_token_idx,
                         vocabulary_size=self.vocabulary_size,
+                        num_steps=total_steps,
                     )
                 else:
                     model = BARTModel.load_from_checkpoint(
@@ -363,7 +364,14 @@ class Chemformer:
                 or self.train_mode == "testing"
                 or self.train_mode == "eval"
             ):
-                model = BARTModel.load_from_checkpoint(self.model_path, decode_sampler=self.sampler)
+                model = BARTModel.load_from_checkpoint(
+                    self.model_path,
+                    decode_sampler=self.sampler,
+                    pad_token_idx=pad_token_idx,
+                    vocabulary_size=self.vocabulary_size,
+                    # args.d_model,
+                    # args.n_layers,
+                )
                 model.eval()
             else:
                 raise ValueError(f"Unknown training mode: {self.train_mode}")
