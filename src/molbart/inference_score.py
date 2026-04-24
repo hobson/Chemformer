@@ -52,6 +52,13 @@ if __name__ == "__main__":
     print(f'Loading Chemformer model with cfg:\n{cfg}')
     chemformer = Chemformer(cfg)
 
+    # BAD IDEA!!!
+    # print('Trying to update tokenizer vocab...')
+    # tokenizer = chemformer.tokenizer.create_vocabulary_from_smiles(smiles)
+    # print(f'New tokenizer: {chemformer.tokenizer}')
+    # print(f'New chemformer: {chemformer}')
+    # cfg.vocabulary_path = str(Path(MODELS_DIR) / 'pre-trained' / 'combined-large' / 'tokenizer_vocab.json')
+
     print(oc.OmegaConf.to_yaml(cfg))
     
     print("Running model inference and scoring...")
