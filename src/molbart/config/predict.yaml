@@ -13,7 +13,7 @@ n_unique_beams: null
 n_gpus: 1
 
 # Data
-data_path: null
+data_path: ./src/molbart/bigdata/seq-to-seq_datasets/uspto_1.tsv
 output_sampled_smiles: null
 vocabulary_path: null
 task: forward_prediction    # ["forward_prediction", "backward_prediction", "mol_opt"]

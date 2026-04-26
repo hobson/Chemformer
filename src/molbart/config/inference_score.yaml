@@ -14,18 +14,19 @@ seed: 1
 n_gpus: 0
 
 # Data
-data_path: null
-dataset_part: test  # Which dataset split to run inference on. [full", "train", "val", "test"]
+data_path: src/molbart/bigdata/seq-to-seq_datasets/uspto_260_test.tsv
+# data_path: src/molbart/bigdata/seq-to-seq_datasets/uspto_1_test.tsv
+dataset_part: test  # Which dataset split to run inference on: full|train|val|test
 vocabulary_path: null
 data_device: cpu
-task: forward_prediction # ["forward_prediction", "backward_prediction"]
-batch_size: 128
+task: forward_prediction  # ["forward_prediction", "backward_prediction"]
+batch_size: 4  # 64
 i_chunk: 0
 n_chunks: 1
 
 # Output files
-output_score_data: true
-output_sampled_smiles: true
+output_score_data: outputs/inference_score_uspto_260_output_score_data.csv
+output_sampled_smiles: outputs/inference_score_uspto_260_output_sampled_smiles.json
 
 # Model args
 model_path: null

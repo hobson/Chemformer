@@ -26,7 +26,7 @@ if __name__ == "__main__":
         cfg = hydra.compose(config_name="inference_score")  # "fine_tune")
         print(f'cfg.data_path from inference_score.yaml: {cfg.data_path}')
     cfg.data_path = cfg.data_path or str(Path(DATA_DIR) / 'seq-to-seq_datasets' / 'uspto_1.tsv')
-    print(cfg.data_path)
+    print(f'cfg.data_path after ORing with inference_score.py hardcoded default: {cfg.data_path}')
     util.seed_everything(cfg.seed)
 
     smiles_dataset = pd.read_csv(cfg.data_path, sep='\t')

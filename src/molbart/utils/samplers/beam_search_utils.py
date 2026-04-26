@@ -1,5 +1,6 @@
 import torch
 import torch.utils.data as tud
+from molbart.constants import DEBUG
 
 
 class Node:
@@ -225,13 +226,22 @@ class LogicalOr(Criterion):
         return any([c(node) for c in self.criteria])
 
 
-def beamsearch(node, beamsize, stop_criterion):
-    node.set_beam_width(beamsize)
-    print("Sampling with beam size: " + str(beamsize))
-
+def beamsearch(node, beam_size, stop_criterion, verbose=DEBUG, limit=10):
+    """ Generate a new state tensor (SMILES str) repeatedly until stop_criteria are met (max_tokens or EOS zeros in tensor) """
+    node.set_beam_width(beam_size)
+    print(f"Sampling with beam_size: {beam_size}")
+    print(f"vars(node): {vars(node)}")
+    print(f"limit\tnode\tnode.get_actions.shape()")
     while not stop_criterion(node):
+        limit -= 1
         a = node.get_actions()
+        if verbose:
+            print(f"{limit}\t{node}\t{a.size()}")
         node.action(a)
+        if limit <= 0:
+            print("WARNING: Unable to generate a complete SMILES str!!!")
+            break
+
 
     a = node.get_actions()
 
@@ -239,4 +249,5 @@ def beamsearch(node, beamsize, stop_criterion):
     node.y = torch.cat((node.y, end_tokens.view(-1, 1)), dim=-1)
     ll_tail = a[torch.arange(len(a)), end_tokens] * torch.logical_not(node.ll_mask).type(a.dtype)
     node.loglikelihood = node.loglikelihood + ll_tail.view(-1, 1)
+    print(f"Final node after beam search: {node}")
     return node

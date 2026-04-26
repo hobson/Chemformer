@@ -19,6 +19,19 @@ if TYPE_CHECKING:
 RDLogger.DisableLog("rdApp.*")
 
 
+def tensor_to_text(y):
+    """ Detokenize a Chemformer autoregression node tensor|np.ndarray to SMILES str (NL text) """
+    y = getattr(y, 'y', y)
+    if not isinstance(y, np.ndarray):
+        Y = y.detach().cpu().numpy()
+    tokens = self.tokenizer.convert_ids_to_tokens(Y)
+
+    sampled_smiles = np.asarray(self.tokenizer.detokenize(tokens, truncate_at_end_token=True)).reshape(
+        (-1, beam_size)
+    )
+    return sampled_smiles
+
+
 class BeamSearchSampler:
     """
     GPU-optimized beam search sampler/decoder. Generates predictions and
@@ -84,6 +97,7 @@ class BeamSearchSampler:
         metrics = self.scorers.score(sampled_smiles, target_smiles)
         return metrics
 
+
     @torch.no_grad()
     def sample_molecules(
         self,
@@ -133,14 +147,24 @@ class BeamSearchSampler:
             data_device=self.data_device,
         )
 
-        beamsearch(node, beam_size, stop_criterion)
+        stop_criterion = LogicalOr((
+            MaxLength(self.max_sequence_length - 1),
+            EOS(),  # EOS (a callable class) is instantiated here and called within the beamsearch inner loop
+            ))
 
-        Y = node.y.detach().cpu().numpy()
-        tokens = self.tokenizer.convert_ids_to_tokens(Y)
+        beamsearch(
+            node=node,
+            beam_size=beam_size,
+            stop_criterion=stop_criterion,
+            )
 
-        sampled_smiles = np.asarray(self.tokenizer.detokenize(tokens, truncate_at_end_token=True)).reshape(
-            (-1, beam_size)
-        )
+        sampled_smiles = tensor_to_text(node)
+        # Y = node.y.detach().cpu().numpy()
+        # tokens = self.tokenizer.convert_ids_to_tokens(Y)
+
+        # sampled_smiles = np.asarray(self.tokenizer.detokenize(tokens, truncate_at_end_token=True)).reshape(
+        #     (-1, beam_size)
+        # )
 
         log_lhs = (node.loglikelihood.detach().cpu().numpy()).reshape(-1, beam_size)
 

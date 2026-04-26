@@ -46,7 +46,14 @@ def setup_encoder():
 
 
 def test_pos_emb_shape(setup_encoder):
-    tokeniser, _, _ = setup_encoder
+    # tokeniser = ChemformerTokenizer(
+    #     smiles=react_data + prod_data, regex_token_patterns=regex.split(".")
+    # )
+    # masker = ReplaceTokensMasker(tokeniser)
+    # encoder = BatchEncoder(
+    #     tokeniser, masker=masker, max_seq_len=model_args["max_seq_len"]
+    # )
+    tokeniser, _, _ = setup_encoder  # FIXME: RUN PYTEST FIXTURE ??!!!
     pad_token_idx = tokeniser["pad"]
     sampler = DecodeSampler(tokeniser, model_args["max_seq_len"])
     model = BARTModel(sampler, pad_token_idx, len(tokeniser), **model_args)

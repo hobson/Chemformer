@@ -1,0 +1,18 @@
+batch_size: 64
+n_beams: 10
+n_unique_beams: null
+n_gpus: 1
+data_path: ./src/molbart/bigdata/seq-to-seq_datasets/uspto_1.tsv
+output_sampled_smiles: null
+vocabulary_path: null
+task: forward_prediction
+i_chunk: 0
+n_chunks: 1
+data_device: cuda
+model_path: null
+model_type: bart
+dataset_part: full
+train_mode: eval
+reactants: null
+datamodule:
+- SynthesisDataModule
