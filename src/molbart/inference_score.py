@@ -24,7 +24,7 @@ def main(cfg, chemformer):
 if __name__ == "__main__":
     with hydra.initialize(version_base=None, config_path='config', job_name="hobs_attempting_run_inference_score"):
         cfg = hydra.compose(config_name="inference_score")  # "fine_tune")
-    cfg.data_path = str(Path(DATA_DIR) / 'seq-to-seq_datasets' / 'uspto_2.tsv')
+    cfg.data_path = str(Path(DATA_DIR) / 'seq-to-seq_datasets' / 'uspto_1.tsv')
 
     util.seed_everything(cfg.seed)
 
