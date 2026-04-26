@@ -1,2 +1,2 @@
-,"reactants,products,reaction_type,set"
-0,"Cc1ccc(F)cc1S(=O)(=O)Cl.Nc1cccc(COCc2ccc(F)cc2)n1,Cc1ccc(F)cc1S(=O)(=O)Nc1cccc(COCc2ccc(F)cc2)n1,<RX_2>,test"
+	reactants	products	reaction_type	set
+0	Cc1ccc(F)cc1S(=O)(=O)Cl.Nc1cccc(COCc2ccc(F)cc2)n1	Cc1ccc(F)cc1S(=O)(=O)Nc1cccc(COCc2ccc(F)cc2)n1	<RX_2>	test

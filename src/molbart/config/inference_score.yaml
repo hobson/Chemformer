@@ -24,8 +24,8 @@ i_chunk: 0
 n_chunks: 1
 
 # Output files
-output_score_data: null
-output_sampled_smiles: null
+output_score_data: true
+output_sampled_smiles: true
 
 # Model args
 model_path: null
