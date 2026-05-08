@@ -19,14 +19,13 @@ if TYPE_CHECKING:
 RDLogger.DisableLog("rdApp.*")
 
 
-def tensor_to_text(y):
+def tensor_to_text(y, tokenizer, beam_size):
     """ Detokenize a Chemformer autoregression node tensor|np.ndarray to SMILES str (NL text) """
     y = getattr(y, 'y', y)
     if not isinstance(y, np.ndarray):
-        Y = y.detach().cpu().numpy()
-    tokens = self.tokenizer.convert_ids_to_tokens(Y)
-
-    sampled_smiles = np.asarray(self.tokenizer.detokenize(tokens, truncate_at_end_token=True)).reshape(
+        y = y.detach().cpu().numpy()
+    tokens = tokenizer.convert_ids_to_tokens(y)
+    sampled_smiles = np.asarray(tokenizer.detokenize(tokens, truncate_at_end_token=True)).reshape(
         (-1, beam_size)
     )
     return sampled_smiles
@@ -158,7 +157,7 @@ class BeamSearchSampler:
             stop_criterion=stop_criterion,
             )
 
-        sampled_smiles = tensor_to_text(node)
+        sampled_smiles = tensor_to_text(node, self.tokenizer, beam_size)
         # Y = node.y.detach().cpu().numpy()
         # tokens = self.tokenizer.convert_ids_to_tokens(Y)
 
