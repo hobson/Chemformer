@@ -1,0 +1,28 @@
+# Large model and data files — supply via CHEMFORMER_MODEL / CHEMFORMER_VOCAB env vars
+src/molbart/bigmodels/
+src/molbart/bigdata/
+data/
+
+# Python artifacts
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.venv/
+*.egg-info/
+
+# Dev / CI
+.git/
+.github/
+docs/
+tests/
+outputs/
+scripts/
+*.log
+*.csv
+
+# Editor / OS
+.env
+.vscode/
+.idea/
+**/.DS_Store

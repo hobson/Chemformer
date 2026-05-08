@@ -1,16 +1,19 @@
 """FastAPI service for single-step retrosynthesis using Chemformer.
 
 Reads model configuration from environment variables:
-    CHEMFORMER_MODEL  - path to .ckpt checkpoint file
-    CHEMFORMER_VOCAB  - path to bart_vocab.json vocabulary file
+    CHEMFORMER_MODEL  - local path or gs:// URI to .ckpt checkpoint file
+    CHEMFORMER_VOCAB  - local path or gs:// URI to bart_vocab.json vocabulary file
     CHEMFORMER_N_BEAMS - (optional) number of beam-search predictions, default 10
     CHEMFORMER_N_GPUS  - (optional) number of GPUs, default 0 (CPU)
+    PORT              - (optional) port to listen on, default 8080 (set by Cloud Run)
 
-Run with:
-    uvicorn retrosynthesis_service:app --host 0.0.0.0 --port 8004
+Run locally:
+    CHEMFORMER_MODEL=... CHEMFORMER_VOCAB=... uvicorn \
+        chemformer.service.retrosynthesis_service:app --port 8080
 """
 
 import os
+import tempfile
 from typing import List
 
 import omegaconf as oc
@@ -21,6 +24,20 @@ from molbart.data import SynthesisDataModule
 from molbart.models import Chemformer
 from pydantic import BaseModel
 
+
+def _resolve_path(uri: str) -> str:
+    """Download a gs:// URI to a temp file and return the local path, or pass through."""
+    if not uri.startswith("gs://"):
+        return uri
+    from google.cloud import storage
+    bucket_name, blob_path = uri[5:].split("/", 1)
+    suffix = os.path.splitext(blob_path)[1]
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+    print(f"Downloading {uri} → {tmp.name}")
+    storage.Client().bucket(bucket_name).blob(blob_path).download_to_filename(tmp.name)
+    return tmp.name
+
+
 cfg = oc.OmegaConf.load(f"{CONFIG_DIR}/predict.yaml")
 
 cfg.task = "backward_prediction"
@@ -29,8 +46,8 @@ cfg.model_type = "bart"
 cfg.datamodule = None
 cfg.n_gpus = int(os.environ.get("CHEMFORMER_N_GPUS", "0"))
 cfg.n_beams = int(os.environ.get("CHEMFORMER_N_BEAMS", "10"))
-cfg.model_path = os.environ["CHEMFORMER_MODEL"]
-cfg.vocabulary_path = os.environ["CHEMFORMER_VOCAB"]
+cfg.model_path = _resolve_path(os.environ["CHEMFORMER_MODEL"])
+cfg.vocabulary_path = _resolve_path(os.environ["CHEMFORMER_VOCAB"])
 
 chemformer = Chemformer(cfg)
 
@@ -105,9 +122,9 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        "retrosynthesis_service:app",
+        "chemformer.service.retrosynthesis_service:app",
         host="0.0.0.0",
-        port=8004,
+        port=int(os.environ.get("PORT", "8080")),
         log_level="info",
         reload=False,
     )
