@@ -240,7 +240,7 @@ class DecodeSampler:
         token_ids = [token_ids] * batch_size
         token_ids = torch.tensor(token_ids, device=device).transpose(0, 1)
         pad_mask = torch.zeros((self.max_seq_len, batch_size), device=device, dtype=torch.bool)
-        log_lhs = torch.zeros((batch_size))
+        log_lhs = torch.zeros((batch_size))  # log likelihoods of last token in SMILES for each sample in batch
 
         # Iteratively apply the tokens to the model and build up the sequence
         for i in range(1, self.max_seq_len):
@@ -272,8 +272,8 @@ class DecodeSampler:
             new_ids[new_pad_mask] = self.pad_token_id
             token_ids[i, :] = new_ids
             pad_mask[i, :] = new_pad_mask
-            log_lhs += new_probs.cpu()
-
+            log_lhs += new_probs.cpu()  # accumulation of probs[-1, :] (next token probability for each example in batch)
+            
         tokens = token_ids.transpose(0, 1)
         tokens = self.tokenizer.convert_ids_to_tokens(tokens)
         mol_strs = self.tokenizer.detokenize(tokens, truncate_at_end_token=True)

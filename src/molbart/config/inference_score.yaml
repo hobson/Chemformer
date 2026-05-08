@@ -25,7 +25,7 @@ i_chunk: 0
 n_chunks: 1
 
 # Output files
-output_score_data: outputs/inference_score_uspto_260_output_score_data.csv
+output_score_data: outputs/inference_score_uspto_260_output_score_data.tsv
 output_sampled_smiles: outputs/inference_score_uspto_260_output_sampled_smiles.json
 
 # Model args
