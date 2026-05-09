@@ -1,7 +1,7 @@
 # ---- build stage ----
 # Compiles/installs all dependencies into an isolated venv.
-# Heavy system build tools stay in this layer only.
-FROM python:3.7-slim AS builder
+# Heavy system build tools stay in this layer and are not copied to runtime.
+FROM python:3.8-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -11,25 +11,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext6 \
  && rm -rf /var/lib/apt/lists/*
 
+# Install uv for fast, reproducible installs from uv.lock
+COPY --from=ghcr.io/astral-sh/uv:0.6 /uv /usr/local/bin/uv
+
 WORKDIR /build
+COPY pyproject.toml uv.lock ./
+COPY src/ ./src/
 
-# requirements.txt is generated from uv.lock via:
-#   uv export --no-hashes --no-dev --no-install-project -o requirements.txt
-COPY requirements.txt ./
-
-# Create a 3.7 venv and install all pinned dependencies via pip.
-# The project package itself is not installed here — src/ is placed on
-# PYTHONPATH in the runtime stage instead, avoiding the uv-build Python>=3.8 requirement.
-RUN python -m venv /venv \
- && /venv/bin/pip install --no-cache-dir --upgrade pip \
- && /venv/bin/pip install --no-cache-dir -r requirements.txt \
- && /venv/bin/pip install --no-cache-dir \
-    "uvicorn==0.22.0" \
-    "google-cloud-storage>=2.0,<3.0"
+# Create a 3.8 venv and install the package + all dependencies.
+# --no-dev skips pytest/black/etc.
+RUN uv venv -p 3.8 /venv \
+ && VIRTUAL_ENV=/venv uv sync --no-dev \
+ && /venv/bin/python -m ensurepip \
+ && /venv/bin/python -m pip install --no-cache-dir \
+    uvicorn==0.22.0 \
+    google-cloud-storage>=2.0,<3.0
 
 
 # ---- runtime stage ----
-FROM python:3.7-slim
+FROM python:3.8-slim
 
 # Runtime libs only (no compilers)
 RUN apt-get update && apt-get install -y --no-install-recommends \
