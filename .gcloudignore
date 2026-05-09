@@ -1,0 +1,28 @@
+.gcloudignore
+.git/
+.github/
+
+# Large model and data files — not needed in build context
+src/molbart/bigmodels/
+src/molbart/bigdata/
+data/
+
+# Python artifacts
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+.venv/
+*.egg-info/
+
+# Dev / CI / docs
+docs/
+tests/
+outputs/
+*.log
+*.csv
+
+# Editor / OS
+.env
+.vscode/
+.idea/
+**/.DS_Store
