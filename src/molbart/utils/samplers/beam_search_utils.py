@@ -226,7 +226,7 @@ class LogicalOr(Criterion):
         return any([c(node) for c in self.criteria])
 
 
-def beamsearch(node, beam_size, stop_criterion, verbose=DEBUG, limit=10):
+def beamsearch(node, beam_size, stop_criterion, verbose=DEBUG, limit=512):
     """ Generate a new state tensor (SMILES str) repeatedly until stop_criteria are met (max_tokens or EOS zeros in tensor) """
     node.set_beam_width(beam_size)
     print(f"Sampling with beam_size: {beam_size}")
