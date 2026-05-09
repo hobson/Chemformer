@@ -12,11 +12,16 @@
 | Molecule | MW (Da) | Top-1 log-likelihood | Top-1 valid? | Chemically correct? |
 |---|---|---|---|---|
 | Aspirin | 180 | −0.74 | Yes | Yes |
+| Methoxy_Diphenylamine | 213 | −0.69 | Yes | Yes |
+| Fluorinated_Imidazole | 201 | −0.75 | Yes | Yes |
 | Ibuprofen | 206 | −0.96 | Yes | Yes |
+| Tolyl_Pyridine | 184 | −0.89 | Yes | Yes |
+| Etoricoxib | 359 | −2.79 | Partial | Partially |
+| Camlipixant | 458 | −3.97 | Partial | Partially |
 | Paclitaxel (Taxol) | 854 | −7.93 | Partial | Partially |
 | Orforglipron | 881 | −24.1 | Partial | No |
 
-The model performs well on small, drug-like molecules within the training distribution (simple organic reactions, MW < 500 Da). Performance degrades gracefully as molecular complexity increases: paclitaxel predictions partially recover the known semi-synthetic strategy, while Orforglipron — a modern GLP-1 receptor agonist with novel heterocyclic scaffolds — is entirely out of distribution.
+The model performs well on small, drug-like molecules within common synthetic reaction classes (MW < 400 Da, Buchwald-Hartwig aminations, ester hydrolyses, dehydrations). Performance degrades gracefully as molecular complexity increases. A log-likelihood threshold of approximately −2 separates high-confidence correct predictions from partial or incorrect ones.
 
 ---
 
@@ -130,6 +135,135 @@ The model cannot reconstruct the Holton or Danishefsky total synthesis routes (w
 
 ---
 
+## Etoricoxib
+
+**SMILES:** `CC1=NC=C(C=C1)C2=C(C=C(C=N2)Cl)C3=CC=C(C=C3)S(=O)(=O)C`
+**MW:** 358.85 Da — selective COX-2 inhibitor (Merck, 2002)
+
+```python
+result = predict_retrosynthesis(
+    "CC1=NC=C(C=C1)C2=C(C=C(C=N2)Cl)C3=CC=C(C=C3)S(=O)(=O)C", n_beams=5
+)
+for i, p in enumerate(result["predictions"], 1):
+    print(f"Beam {i} (ll={p['log_likelihood']:.3f}): {p['reactants_smiles']}")
+```
+
+**Output:**
+```
+Beam 1 (ll=-2.785): CC1=NC=C2C=CC(Cl)=CC3=CC(S(C)(=O)=O)=CC=C3C2=C1.ClC(Cl)(Cl)Cl
+Beam 2 (ll=-4.343): CC1=NC=C2C=CC=C(S(C)(=O)=O)C=CC2=C1.ClC1=CC(Cl)=NC1
+Beam 3 (ll=-5.062): CC1=NC=C2C(=C1)C=CC(Cl)=CC21=CC=C(S(C)(=O)=O)C=C1.ClC(Cl)(Cl)Cl
+Beam 4 (ll=-5.390): CC1=NC=C2C=CC(Cl)=CC2=C1.CS(=O)(=O)C1=CC=CC=C1Cl
+Beam 5 (ll=-5.484): CC1=NC=C2C=CC=C(S(C)(=O)=O)C=CC=C2C2=C1C=CC(Cl)=N2.ClC(Cl)(Cl)Cl
+```
+
+**Assessment:** Partial. Log-likelihood of −2.79 sits just at the confidence boundary. The model correctly identifies that the two key substructures — the methylpyridine fragment and the chloropyrimidine — need to be coupled, but proposes an implausible CCl4-mediated halogenation rather than the correct cross-coupling strategy. Beam 4 is closest to a real retrosynthetic disconnection, cleaving the biaryl bond to give a methylpyrimidine fragment and a chlorinated arylsulfone, consistent with a Suzuki or Negishi coupling approach. Etoricoxib's tricyclic-like heteroaryl framework is uncommon in USPTO-50K.
+
+---
+
+## Camlipixant
+
+**SMILES:** `CC1=CC2=NC(=C(N2C=C1)C[C@H]3CN(CCO3)C(=O)OC)C4=C(C=C(C=C4F)C(=O)NC)F`
+**MW:** 458.47 Da — selective P2X3 receptor antagonist for chronic refractory cough (AstraZeneca)
+
+```python
+result = predict_retrosynthesis(
+    "CC1=CC2=NC(=C(N2C=C1)C[C@H]3CN(CCO3)C(=O)OC)C4=C(C=C(C=C4F)C(=O)NC)F",
+    n_beams=5,
+)
+for i, p in enumerate(result["predictions"], 1):
+    print(f"Beam {i} (ll={p['log_likelihood']:.3f}): {p['reactants_smiles']}")
+```
+
+**Output:**
+```
+Beam 1 (ll=-3.965): CN.COC(=O)N1CCO[C@@H](CC2=C3N=C4C=C(C)C=CN4C3=C(F)C=C(C(=O)O)C=C4F)C1
+Beam 2 (ll=-5.086): CN.COC(=O)N1CCO[C@@H](CC2=C3N=C4C=C(C)C=CN4C(=C3C(F)=CC(C(=O)O)=C4)C2)C1
+Beam 3 (ll=-5.595): CN.COC(=O)N1CCO[C@@H](CC2=C3N=C4C=C(C)C=CN4C3=C(F)C(C(=O)O)=CC4=C2F)C1
+Beam 4 (ll=-5.622): CN.COC(=O)N1CCO[C@@H](CC2=C3N=C4C=C(C)C=C4C=C(F)C3=C(F)C=C(C(=O)O)C=C4F)C1
+Beam 5 (ll=-5.978): CN.COC(=O)N1CCO[C@@H](CC2=C3N=C4C=C(C)C=CN4C(=C3C(F)=CC(C(=O)O)=C2F)C4)C1
+```
+
+**Assessment:** Partially correct. Log-likelihood of −3.97 reflects moderate complexity. All five beams consistently produce the same two-component split: methylamine (`CN`) plus a complex morpholine-imidazopyridine fragment retaining the carboxylic acid form of the methylamide. This correctly identifies the terminal **amide bond** (`C(=O)NC`) as the retrosynthetic disconnection — the model recognises that `C(=O)NC` arises from coupling a carboxylic acid with methylamine. The core imidazopyridine scaffold is intact across all beams, suggesting the model treats it as a stable, pre-formed building block. A genuine synthesis would likely also fragment the morpholine side chain, which the model does not attempt.
+
+---
+
+## Fluorinated_Imidazole
+
+**SMILES:** `N#CC1=C(C2=CC=CC=C2F)N(C)C=N1`
+**MW:** 201.20 Da — fluorophenyl imidazole-4-carbonitrile (synthetic intermediate)
+
+```python
+result = predict_retrosynthesis("N#CC1=C(C2=CC=CC=C2F)N(C)C=N1", n_beams=5)
+for i, p in enumerate(result["predictions"], 1):
+    print(f"Beam {i} (ll={p['log_likelihood']:.3f}): {p['reactants_smiles']}")
+```
+
+**Output:**
+```
+Beam 1 (ll=-0.754): CN1C=NC(C(N)=O)=C1C1=CC=CC=C1F
+Beam 2 (ll=-4.189): CN1C(C2=CC=CC=C2F)=C(C(N)=O)N=C1
+Beam 3 (ll=-4.284): CN1C(C2=CC=CC=C2F)=C(C(=O)N)N=C1
+Beam 4 (ll=-4.353): FC1=CC=CC=C1C1=C(C(N)=O)N=CN1C
+Beam 5 (ll=-5.105): FC1=CC=CC=C1C1=C(C#N)N=CN1.CI
+```
+
+**Assessment:** Excellent. Beam 1 (ll=−0.75) correctly predicts **amide dehydration**: the primary amide `CN1C=NC(C(N)=O)=C1C1=CC=CC=C1F` loses water to give the nitrile. This is a well-established one-step transformation using reagents such as POCl₃, trifluoroacetic anhydride, or Burgess reagent. Beams 2–4 are canonical SMILES variants of the same amide precursor. Beam 5 offers an alternative N-methylation disconnection (imidazole + iodomethane), also chemically valid. Both routes appear in practice.
+
+---
+
+## Methoxy_Diphenylamine
+
+**SMILES:** `COc1ccc(Nc2ccc(C)cc2)cc1`
+**MW:** 213.28 Da — 4-methoxy-4′-methyldiphenylamine (diarylamine coupling product)
+
+```python
+result = predict_retrosynthesis("COc1ccc(Nc2ccc(C)cc2)cc1", n_beams=5)
+for i, p in enumerate(result["predictions"], 1):
+    print(f"Beam {i} (ll={p['log_likelihood']:.3f}): {p['reactants_smiles']}")
+```
+
+**Output:**
+```
+Beam 1 (ll=-0.687): COc1ccc(N)cc1.Cc1ccc(Br)cc1
+Beam 2 (ll=-5.206): c1c(N)ccc(OC)c1.c1c(Br)ccc(C)c1
+Beam 3 (ll=-5.280): c1c(OC)ccc(N)c1.c1c(Br)ccc(C)c1
+Beam 4 (ll=-5.317): c1c(N)ccc(OC)c1.c1cc(Br)ccc1C
+Beam 5 (ll=-5.405): c1c(OC)ccc(N)c1.c1cc(Br)ccc1C
+```
+
+**Assessment:** Excellent. Beam 1 (ll=−0.69, the highest confidence of all test molecules) correctly identifies **Buchwald-Hartwig C–N coupling**: 4-methoxyaniline (`COc1ccc(N)cc1`) + 4-bromotoluene (`Cc1ccc(Br)cc1`). This is exactly the standard palladium-catalysed amination used to synthesise diarylamines. Beams 2–5 are canonical SMILES reorderings of the same pair. The near-perfect confidence reflects that Buchwald-Hartwig disconnections of this type are well-represented in USPTO-50K.
+
+---
+
+## Tolyl_Pyridine
+
+**SMILES:** `Cc1ccc(Nc2cccnc2)cc1`
+**MW:** 184.24 Da — N-(4-methylphenyl)pyridin-3-amine (aryl-heteroaryl amine)
+
+```python
+result = predict_retrosynthesis("Cc1ccc(Nc2cccnc2)cc1", n_beams=5)
+for i, p in enumerate(result["predictions"], 1):
+    print(f"Beam {i} (ll={p['log_likelihood']:.3f}): {p['reactants_smiles']}")
+```
+
+**Output:**
+```
+Beam 1 (ll=-0.890): Brc1cccnc1.Cc1ccc(N)cc1
+Beam 2 (ll=-1.791): Cc1ccc(Br)cc1.Nc1cccnc1
+Beam 3 (ll=-6.458): c1cc(C)ccc1Br.c1cc(N)cnc1
+Beam 4 (ll=-6.541): c1cc(C)ccc1Br.c1(N)cnccc1
+Beam 5 (ll=-6.667): c1cc(C)ccc1Br.c1c(N)cncc1
+```
+
+**Assessment:** Excellent. The model correctly predicts **Buchwald-Hartwig amination** in two complementary disconnections:
+- **Beam 1** (ll=−0.89): 3-bromopyridine + 4-toluidine — aryl bromide on the pyridine
+- **Beam 2** (ll=−1.79): 4-bromotoluene + 3-aminopyridine — aryl bromide on the toluene
+
+Both are synthetically valid; Beam 1 is slightly preferred because C–N coupling onto electron-deficient pyridine rings is generally more facile. Beams 3–5 are SMILES variants of the same Beam 2 disconnection. The model provides genuinely diverse top-2 predictions here, unlike simpler cases where all beams converge to canonical rewrites of one route.
+
+---
+
 ## Orforglipron
 
 **SMILES:** `C[C@H]1C[C@]1(C2=NOC(=O)N2)N3C4=C(C=C(C=C4)[C@H]5CCOC(C5)(C)C)C=C3C(=O)N6CCC7=NN(C(=C7[C@@H]6C)N8C=CN(C8=O)C9=C(C1=C(C=C9)N(N=C1)C)F)C1=CC(=C(C(=C1)C)F)C`
@@ -169,15 +303,15 @@ Beam 5 (ll=-25.654): C=CC1=C(C2=NOC(=O)N2)N2C(=O)C3=CC4=CC(C=C(C)C)[C@H]5CCOC(C)
 
 ### Performance vs molecular complexity
 
-The four test molecules reveal a clear gradient:
+The nine test molecules reveal a clear gradient correlated with reaction class familiarity and molecular size:
 
-| Log-likelihood range | Interpretation |
-|---|---|
-| > −2 | High confidence; prediction likely correct |
-| −2 to −10 | Moderate confidence; partial or approximate route |
-| < −10 | Low confidence; molecule out of training distribution |
+| Log-likelihood range | Interpretation | Examples |
+|---|---|---|
+| > −2 | High confidence; prediction likely correct | Aspirin, Ibuprofen, Fluorinated_Imidazole, Methoxy_Diphenylamine, Tolyl_Pyridine |
+| −2 to −10 | Moderate confidence; partial or approximate route | Etoricoxib, Camlipixant, Paclitaxel |
+| < −10 | Low confidence; molecule out of training distribution | Orforglipron |
 
-Paclitaxel (ll≈−8) falls in the middle band: the model identifies the right bond class to break (ester at C-13) but cannot cleanly reconstruct the baccatin III + side-chain disconnection that real semi-synthesis uses.
+The five high-confidence molecules all involve reaction classes heavily represented in USPTO-50K: ester hydrolysis, amide dehydration, and Buchwald-Hartwig C–N coupling. The three mid-confidence molecules are larger (MW 358–854 Da) or contain unusual heterocyclic frameworks. Orforglipron is uniquely difficult: large, modern, and structurally unlike anything in the training set.
 
 ### What works well
 - Small molecules (MW < 300 Da) within common synthetic chemistry classes
