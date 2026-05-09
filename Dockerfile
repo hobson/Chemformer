@@ -1,7 +1,7 @@
 # ---- build stage ----
 # Compiles/installs all dependencies into an isolated venv.
 # Heavy system build tools stay in this layer and are not copied to runtime.
-FROM python:3.7-slim AS builder
+FROM python:3.8-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -18,9 +18,9 @@ WORKDIR /build
 COPY pyproject.toml uv.lock ./
 COPY src/ ./src/
 
-# Create a 3.7 venv and install the package + all dependencies.
+# Create a 3.8 venv and install the package + all dependencies.
 # --no-dev skips pytest/black/etc.
-RUN uv venv -p 3.7 /venv \
+RUN uv venv -p 3.8 /venv \
  && VIRTUAL_ENV=/venv uv sync --no-dev \
  && /venv/bin/python -m ensurepip \
  && /venv/bin/python -m pip install --no-cache-dir \
@@ -29,7 +29,7 @@ RUN uv venv -p 3.7 /venv \
 
 
 # ---- runtime stage ----
-FROM python:3.7-slim
+FROM python:3.8-slim
 
 # Runtime libs only (no compilers)
 RUN apt-get update && apt-get install -y --no-install-recommends \
