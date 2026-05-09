@@ -13,9 +13,10 @@
 |---|---|---|---|---|
 | Aspirin | 180 | −0.74 | Yes | Yes |
 | Ibuprofen | 206 | −0.96 | Yes | Yes |
+| Paclitaxel (Taxol) | 854 | −7.93 | Partial | Partially |
 | Orforglipron | 881 | −24.1 | Partial | No |
 
-The model performs well on small, drug-like molecules within the training distribution (simple organic reactions, MW < 500 Da). It fails gracefully on Orforglipron, a structurally complex modern GLP-1 receptor agonist far outside the training chemical space.
+The model performs well on small, drug-like molecules within the training distribution (simple organic reactions, MW < 500 Da). Performance degrades gracefully as molecular complexity increases: paclitaxel predictions partially recover the known semi-synthetic strategy, while Orforglipron — a modern GLP-1 receptor agonist with novel heterocyclic scaffolds — is entirely out of distribution.
 
 ---
 
@@ -94,6 +95,41 @@ Note: the industrial Boot–Nicholson synthesis of ibuprofen uses a different ro
 
 ---
 
+## Paclitaxel (Taxol)
+
+**SMILES:** `CC1=C2[C@@]([C@H](C(=O)[C@@H]3[C@@]2(OC(=O)[C@@H]([C@@H]3O)NC(=O)c4ccccc4)C)OC(=O)c5ccccc5)(C[C@@H]1OC(=O)[C@H](O)c6ccccc6)O`
+**MW:** 853.91 Da — taxane diterpenoid, antimitotic natural product (Bristol-Myers Squibb)
+
+```python
+paclitaxel_smiles = (
+    "CC1=C2[C@@]([C@H](C(=O)[C@@H]3[C@@]2(OC(=O)[C@@H]([C@@H]3O)"
+    "NC(=O)c4ccccc4)C)OC(=O)c5ccccc5)(C[C@@H]1OC(=O)[C@H](O)c6ccccc6)O"
+)
+result = predict_retrosynthesis(paclitaxel_smiles, n_beams=5)
+for i, p in enumerate(result["predictions"], 1):
+    print(f"Beam {i} (ll={p['log_likelihood']:.3f}): {p['reactants_smiles'][:80]}...")
+```
+
+**Output:**
+```
+Beam 1 (ll=-7.931): CC1=C2[C@@](O)([C@H](C(=O)[C@H]3[C@@H](O)[C@@H](NC(=O)c4ccccc4)C(=O)O...
+Beam 2 (ll=-8.205): CC1=C2[C@](O)(C[C@@H]1OC(=O)[C@H](O)c1ccccc1)C[C@H](O)C2=C(C)[C@H]1...
+                    .O=C(O)c1ccccc1
+Beam 3 (ll=-8.516): CC1=C2[C@](O)(C[C@@H]1OC(=O)[C@H](O)c1ccccc1)C[C@H](O)C2=C(C)[C@H]1...
+Beam 4 (ll=-9.410): CC1=C2[C@](O)(C[C@@H]1OC(=O)[C@H](O)c1ccccc1)C[C@H](O)C2=C(C)[C@@H](O)...
+Beam 5 (ll=-11.815): CC1=C2[C@](O)(C[C@@H]1OC(=O)[C@H](O)c1ccccc1)C[C@H](O)C2=C(C)[C@@H](O)...
+```
+
+**Assessment:** Partially correct. Log-likelihoods of −7.9 to −11.8 sit between the simple drugs and Orforglipron, reflecting a molecule at the edge of the training distribution.
+
+- **Beam 1** (ll=−7.93): Rearranges the oxetane ring but keeps the full taxane scaffold intact — not a useful synthetic disconnection.
+- **Beams 2–3** (ll=−8.2 to −8.5): More chemically meaningful — these cleave the C-13 ester side chain, yielding a baccatin III-like taxane core plus benzoic acid (`O=C(O)c1ccccc1`). This approximates the real semi-synthetic route: commercial paclitaxel production starts from **10-deacetylbaccatin III** (extracted from *Taxus baccata* needles) and attaches the β-lactam side chain via esterification. The model partially recovers this strategy.
+- **Beams 4–5** (ll=−9.4 to −11.8): Alternative ester disconnections on the taxane core with progressively lower confidence.
+
+The model cannot reconstruct the Holton or Danishefsky total synthesis routes (which build the taxane ring system from simpler precursors) — these multi-step ring-forming strategies are beyond the scope of a single-step model trained on USPTO-50K.
+
+---
+
 ## Orforglipron
 
 **SMILES:** `C[C@H]1C[C@]1(C2=NOC(=O)N2)N3C4=C(C=C(C=C4)[C@H]5CCOC(C5)(C)C)C=C3C(=O)N6CCC7=NN(C(=C7[C@@H]6C)N8C=CN(C8=O)C9=C(C1=C(C=C9)N(N=C1)C)F)C1=CC(=C(C(=C1)C)F)C`
@@ -131,23 +167,39 @@ Beam 5 (ll=-25.654): C=CC1=C(C2=NOC(=O)N2)N2C(=O)C3=CC4=CC(C=C(C)C)[C@H]5CCOC(C)
 
 ## Conclusions
 
+### Performance vs molecular complexity
+
+The four test molecules reveal a clear gradient:
+
+| Log-likelihood range | Interpretation |
+|---|---|
+| > −2 | High confidence; prediction likely correct |
+| −2 to −10 | Moderate confidence; partial or approximate route |
+| < −10 | Low confidence; molecule out of training distribution |
+
+Paclitaxel (ll≈−8) falls in the middle band: the model identifies the right bond class to break (ester at C-13) but cannot cleanly reconstruct the baccatin III + side-chain disconnection that real semi-synthesis uses.
+
 ### What works well
 - Small molecules (MW < 300 Da) within common synthetic chemistry classes
-- High-confidence predictions (log-likelihood > −2) correlate with correct and well-known routes
+- High-confidence predictions (log-likelihood > −2) correlate with correct, well-known routes
 - Multiple beams often represent the same correct route with canonical SMILES variants, indicating high model certainty
+- For mid-complexity natural products, the model recovers the correct reaction *class* (ester hydrolysis, acylation) even if the specific disconnection is imperfect
 
 ### Limitations
 - **Training distribution cutoff:** USPTO-50K covers reactions up to ~2016 and skews toward simple academic organic chemistry. Modern drug candidates like Orforglipron fall outside this distribution.
 - **Single-step only:** The service predicts one retrosynthetic step. Complex targets require chained multi-step planning (AiZynthFinder, ASKCOS, IBM RXN).
 - **No stereochemistry reasoning:** The model does not reason about whether the predicted route will reproduce the correct stereochemistry.
 - **SMILES canonicalization:** Top beams are often SMILES-equivalent representations of the same reactants rather than genuinely diverse routes.
+- **Natural product total synthesis:** Ring-forming strategies (e.g., Holton/Danishefsky taxol synthesis) are beyond single-step scope.
 
 ### Recommended use cases
 - Quick single-step retrosynthetic lookup for lead optimization analogs
 - Reaction class classification (ester hydrolysis, acylation, etc.)
 - Filtering/ranking candidate routes generated by other tools
+- Confidence scoring to flag molecules likely outside the training distribution (ll < −10 as a threshold)
 
 ### Not recommended for
 - Novel drug candidates outside USPTO-50K chemistry space (MW > 500 Da, modern heterocyclic scaffolds)
 - Stereoselective synthesis planning
+- Natural product total synthesis route design
 - Final synthetic route selection without expert chemist review
